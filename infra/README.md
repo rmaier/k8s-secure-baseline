@@ -15,7 +15,8 @@ gcloud config set project project-19f7eed5-b04a-472c-b23
 
 tofu -chdir=infra init
 tofu -chdir=infra validate
-tofu -chdir=infra plan -var 'project_id=project-19f7eed5-b04a-472c-b23'
+tofu -chdir=infra plan
+tofu -chdir=infra apply
 ```
 
 Local state will appear after the first apply as `infra/terraform.tfstate`.

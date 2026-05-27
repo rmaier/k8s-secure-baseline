@@ -56,7 +56,47 @@ Test the MCP integration for opentofu:
 
 [infra](infra/README.md) docs
 
+## Linting and pre commit
 
+### tflint and tofu fmt
+
+tflint [repo](https://github.com/terraform-linters/tflint)
+
+```bash
+curl -sSLO https://github.com/terraform-linters/tflint/releases/latest/download/tflint_linux_amd64.zip
+unzip tflint_linux_amd64.zip
+sudo install -c -v tflint /usr/local/bin/
+```
+
+create the config file `infra/.tflint.hcl`
+
+```bash
+tofu fmt -diff
+tflint --recursive
+```
+
+### trivy
+
+[website](https://trivy.dev/docs/latest/getting-started/installation/)
+
+```bash
+curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sudo sh -s -- -b /usr/local/bin v0.70.0
+# check
+trivy fs --scanners misconfig --exit-code 1 --severity HIGH,CRITICAL .
+```
+
+### pre commit hook
+
+[website](https://pre-commit.com/)
+
+The tool pre-commit: De facto standard for IaC; huge hook ecosystem; language: system for local tools
+
+```bash
+sudo apt install pre-commit
+# Install pre-commit hooks into the repo
+pre-commit install 
+pre-commit run --all-files
+```
 
 ## Implementation checklist
 

@@ -1,0 +1,4 @@
+# Public IP on the VPS is intentional — it serves HTTP/HTTPS traffic
+# and is the ingress point for the k8s workload. SSH is the only
+# management surface and is locked to port 22 via firewall tag.
+AVD-GCP-0031

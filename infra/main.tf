@@ -94,8 +94,8 @@ resource "google_compute_instance" "vps" {
 }
 
 module "dns" {
-  source = "./modules/dns"
-  domain = var.domain
+  source    = "./modules/dns"
+  domain    = var.domain
   subdomain = var.subdomain
-  ip     = google_compute_instance.vps.network_interface[0].access_config[0].nat_ip
+  ip        = google_compute_instance.vps.network_interface[0].access_config[0].nat_ip
 }

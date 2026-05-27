@@ -1,7 +1,10 @@
 terraform {
+  required_version = ">= 1.8"
+
   required_providers {
     desec = {
-      source = "timofurrer/desec"
+      source  = "timofurrer/desec"
+      version = "~> 0.6"
     }
   }
 }

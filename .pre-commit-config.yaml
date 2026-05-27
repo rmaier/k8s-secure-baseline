@@ -1,0 +1,26 @@
+repos:
+  - repo: local
+    hooks:
+      - id: tofu-fmt
+        name: OpenTofu format check
+        language: system
+        entry: tofu fmt -check -recursive
+        pass_filenames: false
+
+      - id: tflint
+        name: TFLint
+        language: system
+        entry: bash -c 'cd infra && tflint --recursive'
+        pass_filenames: false
+
+      - id: trivy-secrets
+        name: Trivy secret scan
+        language: system
+        entry: trivy fs --scanners secret --exit-code 1 --severity HIGH,CRITICAL .
+        pass_filenames: false
+
+      - id: trivy-iac
+        name: Trivy IaC scan
+        language: system
+        entry: trivy fs --scanners misconfig --exit-code 1 --severity HIGH,CRITICAL .
+        pass_filenames: false
