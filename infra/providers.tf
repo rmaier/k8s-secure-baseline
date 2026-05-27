@@ -5,3 +5,7 @@ provider "google" {
   region  = var.region
   zone    = var.zone
 }
+
+provider "desec" {
+  api_token = var.desec_token
+}

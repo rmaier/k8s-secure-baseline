@@ -6,5 +6,9 @@ terraform {
       source  = "hashicorp/google"
       version = "~> 7.33"
     }
+    desec = {
+      source  = "timofurrer/desec"
+      version = "~> 0.6"
+    }
   }
 }

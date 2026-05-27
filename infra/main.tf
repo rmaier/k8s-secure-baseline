@@ -49,6 +49,20 @@ resource "google_compute_firewall" "allow_https" {
   }
 }
 
+resource "google_compute_firewall" "allow_kube_apiserver" {
+  name    = "${var.instance_name}-allow-kube-apiserver"
+  network = data.google_compute_network.default.self_link
+
+  direction     = "INGRESS"
+  source_ranges = ["0.0.0.0/0"]
+  target_tags   = [var.network_tag]
+
+  allow {
+    protocol = "tcp"
+    ports    = ["6443"]
+  }
+}
+
 resource "google_compute_instance" "vps" {
   name         = var.instance_name
   machine_type = var.machine_type
@@ -75,5 +89,13 @@ resource "google_compute_instance" "vps" {
     google_compute_firewall.allow_ssh,
     google_compute_firewall.allow_http,
     google_compute_firewall.allow_https,
+    google_compute_firewall.allow_kube_apiserver,
   ]
+}
+
+module "dns" {
+  source = "./modules/dns"
+  domain = var.domain
+  subdomain = var.subdomain
+  ip     = google_compute_instance.vps.network_interface[0].access_config[0].nat_ip
 }

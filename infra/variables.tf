@@ -49,3 +49,19 @@ variable "zone" {
   description = "Default zone"
   default     = "europe-southwest1-a"
 }
+
+variable "desec_token" {
+  type        = string
+  description = "deSEC API token — set via TF_VAR_desec_token, never commit"
+  sensitive   = true
+}
+
+variable "domain" {
+  type        = string
+  description = "deSEC domain name (e.g. dedyn.io)"
+}
+
+variable "subdomain" {
+  type        = string
+  description = "deSEC sub domain name (e.g. example for example.dedyn.io)"
+}

@@ -1,5 +1,10 @@
 project_id = "project-19f7eed5-b04a-472c-b23"
 
+# DNS (deSEC)
+# domain      = "dedyn.io" # for "example.dedyn.io" 
+# subdomain   = "example" # for "example.dedyn.io" 
+# desec_token via TF_VAR_desec_token env var — never commit
+
 # Optional overrides
 # instance_name     = "my-vps"
 # machine_type      = "e2-medium"
