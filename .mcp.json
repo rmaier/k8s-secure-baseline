@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "opentofu": {
+      "type": "sse",
+      "url": "https://mcp.opentofu.org/sse"
+    },
+    "azure": {
+      "type": "sse",
+      "url": "https://mcp.management.azure.com"
+    }
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "opentofu": {
+      "type": "remote",
+      "url": "https://mcp.opentofu.org/sse",
+      "enabled": true
+    },
+    "azure": {
+      "type": "remote",
+      "url": "https://mcp.management.azure.com",
+      "enabled": true
+    }
+  }
+}

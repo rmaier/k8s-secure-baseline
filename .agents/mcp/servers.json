@@ -1,0 +1,12 @@
+{
+  "servers": {
+    "opentofu": {
+      "transport": "sse",
+      "url": "https://mcp.opentofu.org/sse"
+    },
+    "azure": {
+      "transport": "sse",
+      "url": "https://mcp.management.azure.com"
+    }
+  }
+}
