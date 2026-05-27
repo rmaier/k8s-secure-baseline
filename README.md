@@ -98,6 +98,20 @@ pre-commit install
 pre-commit run --all-files
 ```
 
+## Setup the Cluster (Ansible)
+
+See [ansible/README.md](ansible/README.md) for full details. Run from the `ansible/` directory:
+
+```bash
+cd ansible
+
+# Check SSH connectivity
+ansible k8s_control_plane -m ping
+
+# Apply
+ansible-playbook playbooks/k8s.yml
+```
+
 ## Implementation checklist
 
 ### Prerequisites
@@ -105,7 +119,7 @@ pre-commit run --all-files
 - [x] Init Git repo
 - [x] Install OpenTofu
 - [x] Install gcloud CLI — authenticate + set default project
-- [ ] Install kubectl locally — for later smoke-testing
+- [x] Install kubectl locally
 
 ### VM provisioning
 
@@ -117,14 +131,12 @@ pre-commit run --all-files
 
 ### Kubernetes bootstrap
 
-- [ ] Add `metadata_startup_script` to `google_compute_instance` — cloud-init to install k8s
-- [ ] Install containerd — configure cgroup driver = systemd
-- [ ] Install kubeadm, kubelet, kubectl — pin to a specific version
-- [ ] Run `kubeadm init` — `--pod-network-cidr=10.244.0.0/16`
-- [ ] Install CNI plugin — Flannel or Calico
-- [ ] Untaint control-plane node — allow workloads on single-node cluster
-- [ ] Copy kubeconfig to local machine
-- [ ] Smoke-test — `kubectl get nodes` — node should be Ready
+- [x] Install containerd — configured with `SystemdCgroup = true` (cgroup v2 / Ubuntu 24.04)
+- [x] Install kubeadm, kubelet, kubectl — pinned to 1.32, held via apt
+- [x] Run `kubeadm init` — `--pod-network-cidr=10.244.0.0/16` + domain as cert SAN
+- [x] Deploy Flannel CNI
+- [x] Untaint control-plane node — workloads schedule on single node
+- [x] Kubeconfig fetched to `~/.kube/config` — `kubectl get nodes` shows Ready
 
 ### Ingress and TLS
 

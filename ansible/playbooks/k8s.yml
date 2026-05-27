@@ -1,0 +1,12 @@
+---
+- name: K8s prerequisites
+  hosts: k8s_control_plane
+  become: true
+  roles:
+    - k8s-common
+
+- name: K8s control plane bootstrap
+  hosts: k8s_control_plane
+  become: true
+  roles:
+    - k8s-control-plane
