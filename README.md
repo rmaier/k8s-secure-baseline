@@ -62,69 +62,43 @@ Test the MCP integration for opentofu:
 
 ### Prerequisites
 
-- [x] Init Git repo — README.md, .gitignore (`*.tfstate*`, `.terraform/`, `.terragrunt-cache/`)
-- [ ] Define folder layout — `infra/gcp/vm/`, `infra/gcp/dns/`, `infra/k8s/`, `modules/`
-- [x] Install OpenTofu 
-- [x] Install Terragrunt
+- [x] Init Git repo
+- [x] Install OpenTofu
 - [x] Install gcloud CLI — authenticate + set default project
-- [ ] Install kubectl + kubeadm locally — for later smoke-testing
-
-### Remote state (skip)
-
-- [ ] Create GCS bucket for remote state — manual bootstrap, one-time
-- [ ] Write root `terragrunt.hcl` — `remote_state` block pointing to GCS
-- [ ] Enable GCP APIs (`compute.googleapis.com`, `secretmanager.googleapis.com`)
+- [ ] Install kubectl locally — for later smoke-testing
 
 ### VM provisioning
 
-- [ ] Write VM module `modules/gcp-vm/main.tf` — `google_compute_instance`, `e2-standard-2` or similar
-- [ ] Configure OS — Ubuntu 22.04 LTS image, 20 GB boot disk
-- [ ] Add firewall rules — ports 22 (SSH), 80, 443, 6443 (k8s API)
-- [ ] Assign static external IP (`google_compute_address`) — needed for DNS
-- [ ] Output external IP — consumed by DNS module via Terragrunt dependency
-- [ ] Add SSH key to metadata — or use OS Login
-- [ ] Wire via Terragrunt `infra/gcp/vm/terragrunt.hcl`
-- [ ] Run `tofu apply` — verify VM accessible via SSH
+- [x] Flat OpenTofu config in `infra/` — no Terragrunt, local state
+- [x] Ubuntu 24.04 LTS, `e2-medium`, 30 GB `pd-balanced`
+- [x] Firewall rules — ports 22, 80, 443, 6443 (k8s API)
+- [x] DNS A record via `timofurrer/desec` provider (`infra/modules/dns/`) — IP always in sync, no static IP needed
+- [x] VM reachable via domain name over SSH
 
 ### Kubernetes bootstrap
 
-- [ ] Write cloud-init / startup script `modules/gcp-vm/files/k8s-bootstrap.sh`
-- [ ] Install container runtime — containerd via apt, configure cgroup driver = systemd
-- [ ] Install kubeadm, kubelet, kubectl — pin to a specific version e.g. 1.30
-- [ ] Run `kubeadm init` — `--pod-network-cidr=10.244.0.0/16` for Flannel
-- [ ] Install CNI plugin — Flannel or Calico via `kubectl apply`
+- [ ] Add `metadata_startup_script` to `google_compute_instance` — cloud-init to install k8s
+- [ ] Install containerd — configure cgroup driver = systemd
+- [ ] Install kubeadm, kubelet, kubectl — pin to a specific version
+- [ ] Run `kubeadm init` — `--pod-network-cidr=10.244.0.0/16`
+- [ ] Install CNI plugin — Flannel or Calico
 - [ ] Untaint control-plane node — allow workloads on single-node cluster
-- [ ] Copy kubeconfig to `/root/.kube/config` and to local machine
-- [ ] Bake script into VM via `google_compute_instance` `metadata_startup_script` — or use `null_resource` + `remote-exec`
+- [ ] Copy kubeconfig to local machine
 - [ ] Smoke-test — `kubectl get nodes` — node should be Ready
-
-### DNS
-
-- [ ] Get deSEC API token from desec.io
-- [ ] Store token in GCP Secret Manager or `.envrc` — never commit to repo
-- [ ] Add deSEC provider `modules/dns/main.tf` — `registry.opentofu.org/registry/desec` or community fork
-- [ ] Create A record pointing to static VM IP — `desec_rrset` resource, TTL 300
-- [ ] Wire via Terragrunt `infra/gcp/dns/terragrunt.hcl` — dependency on vm module output
 
 ### Ingress and TLS
 
-- [ ] Deploy cert-manager to cluster — `kubectl apply` or Helm via tofu `helm_release`
-- [ ] Create ClusterIssuer `infra/k8s/cert-manager/issuer.yaml` — ACME Let's Encrypt, HTTP-01 or DNS-01 challenge
-- [ ] Choose ingress controller — nginx-ingress — deploy via Helm or static manifest
+- [ ] Deploy cert-manager — Helm or `kubectl apply`
+- [ ] Create `ClusterIssuer` — ACME Let's Encrypt, HTTP-01 challenge
+- [ ] Deploy nginx-ingress controller
 
 ### Demo app
 
-- [ ] Write Deployment `infra/k8s/demo-app/deployment.yaml` — e.g. `nginxdemos/hello` or `gcr.io/google-samples/hello-app:1.0`
-- [ ] Write Service `infra/k8s/demo-app/service.yaml` — ClusterIP (ingress handles external traffic)
-- [ ] Write Ingress `infra/k8s/demo-app/ingress.yaml` — TLS block + cert-manager annotation
-- [ ] Manage manifests via OpenTofu `modules/k8s-app/main.tf` — kubernetes provider, auth from kubeconfig output
-- [ ] Wire via Terragrunt `infra/k8s/demo-app/terragrunt.hcl` — dependency on vm + dns modules
-- [ ] Apply and verify — `curl -I https://demo.yourdomain.de`
+- [ ] `Deployment` + `Service` + `Ingress` manifests — TLS via cert-manager annotation
+- [ ] Verify — `curl -I https://<subdomain>.<domain>`
 
-### CI/CD and docs
+### CI/CD
 
-- [ ] Add GitHub Actions workflow `.github/workflows/tofu-plan.yml` — plan on PR, apply on merge to main
-- [ ] Authenticate GHA to GCP via Workload Identity Federation — no JSON key in secrets
-- [ ] Add `CODEOWNERS` — + branch protection on main
-- [ ] Write `docs/architecture.md` — short diagram: VM → k8s → ingress → workload
-- [ ] Tag `v0.1.0` — first working release
+- [ ] GitHub Actions — `tofu plan` on PR, `tofu apply` on merge
+- [ ] GCP auth via Workload Identity Federation — no JSON key in secrets
+- [ ] Tag `v0.1.0`
