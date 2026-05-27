@@ -1,0 +1,11 @@
+project_id = "project-19f7eed5-b04a-472c-b23"
+
+# Optional overrides
+# instance_name     = "my-vps"
+# machine_type      = "e2-medium"
+# boot_disk_size_gb = 30
+# boot_disk_type    = "pd-balanced"
+# region            = "europe-southwest1"
+# zone              = "europe-southwest1-a"
+# network_name      = "default"
+# network_tag       = "vps"
