@@ -1,62 +1,51 @@
-# Demo iac repo
+# k8s-secure-baseline
 
-## Agent and git setup
+A compliant GitOps platform baseline — a self-managed Kubernetes cluster on a GCP VPS, provisioned with OpenTofu/Terragrunt, configured with Ansible, and managed via ArgoCD. Hardened to CKS standards and documented against NIS-2, DSGVO, and BSI-Grundschutz baselines.
+
+See [`docs/roadmap.md`](docs/roadmap.md) for the full project goals and phased plan.
+
+## Repo structure
 
 ```
-.
-├── .agents/
-│   ├── agents/
-│   │   ├── AGENTS.md
-│   │   └── system-prompt.md
-│   ├── mcp/
-│   │   └── servers.json
-│   ├── skills/
-│   │   ├── ansible/SKILL.md      # Ansible playbook patterns
-│   │   ├── commit/SKILL.md       # Conventional Commits
-│   │   ├── devsecops/SKILL.md    # Security, compliance (NIS2/DORA)
-│   │   ├── iac/SKILL.md          # OpenTofu, Terragrunt patterns
-│   │   └── k8s/SKILL.md          # Kubernetes conventions
-│   ├── scripts/
-│   │   ├── link.sh
-│   │   └── sync-mcp.sh
-│   ├── settings.json
-│   └── .gitignore
-├── .claude -> .agents/
-├── .mcp.json                     # Claude mcp config
-├── opencode.json
-└── README.md
+infra/          OpenTofu + Terragrunt — provisions GCP VM and DNS
+ansible/        Ansible — bootstraps kubeadm, Cilium, ArgoCD
+k8s/            Kubernetes manifests — ArgoCD app-of-apps
+docs/           Architecture, compliance mappings, ADRs, runbooks
+.agents/        Agent config (skills, MCP servers) — shared across Claude Code and OpenCode
 ```
 
+## 1. Provision the VPS
 
+See [`infra/README.md`](infra/README.md) for full details.
 
 ```bash
-ln -s .agents .claude
+cd infra/envs/gcp-vps
+export TF_VAR_desec_token=<your-token>
+
+# With Terragrunt
+terragrunt init && terragrunt apply -var-file=terraform.tfvars
+
+# Without Terragrunt
+tofu init && tofu apply -var-file=terraform.tfvars
 ```
 
-mcp servers vendor agnostic config in `.agents/mcp/servers.json`. 
+## 2. Bootstrap the cluster
 
-Tell Claude to use  ` .agents/scripts/sync-mcp.sh` to create vendor specific mcp configs. 
+See [`ansible/README.md`](ansible/README.md) for full details.
 
-claude mcp [config](https://code.claude.com/docs/en/settings#what-uses-scopes)
+Set `argocd_repo_url` in `ansible/inventory/group_vars/k8s_control_plane.yml` first, then:
 
-Test the MCP integration for opentofu: 
+```bash
+cd ansible
+ansible k8s_control_plane -m ping     # verify SSH
+ansible-playbook playbooks/k8s.yml
+```
 
-> whats the latest hashicorp/google version ? 
->
-> ```bash
-> Thinking: The user is asking about the latest version of the hashicorp/google provider. Let me look up the OpenTofu registry to find the latest version.
-> ⚙ opentofu_get-provider-details [namespace=hashicorp, name=google]
-> Thinking: The latest version of hashicorp/google is v7.33.0.
-> v7.33.0
-> ```
->
-> check [here](https://search.opentofu.org/provider/hashicorp/google/latest). 
+This runs four plays in sequence: system prerequisites → kubeadm control plane → Cilium CNI → ArgoCD bootstrap.
 
-## Provision vps and dns
+After a successful run: `kubectl get nodes` shows `Ready`, `argocd app list` shows all platform apps syncing from Git.
 
-[infra](infra/README.md) docs
-
-## Linting and pre commit
+## 3. Tooling setup
 
 ### tflint and tofu fmt
 
@@ -68,14 +57,12 @@ unzip tflint_linux_amd64.zip
 sudo install -c -v tflint /usr/local/bin/
 ```
 
-create the config file `infra/.tflint.hcl`
-
 ```bash
 tofu fmt -diff
 tflint --recursive
 ```
 
-### trivy
+### Trivy
 
 [website](https://trivy.dev/docs/latest/getting-started/installation/)
 
@@ -85,20 +72,20 @@ curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/inst
 trivy fs --scanners misconfig --exit-code 1 --severity HIGH,CRITICAL .
 ```
 
-### pre commit hook
+### pre-commit
 
 [website](https://pre-commit.com/)
-
-The tool pre-commit: De facto standard for IaC; huge hook ecosystem; language: system for local tools
 
 ```bash
 sudo apt install pre-commit
 # Install pre-commit hooks into the repo
-pre-commit install 
+pre-commit install
 pre-commit run --all-files
 ```
 
-## Setup terragrunt
+Gates: `tofu fmt`, `tflint`, Trivy secrets, Trivy IaC misconfig.
+
+### Terragrunt
 
 [docs](https://docs.terragrunt.com/getting-started/quick-start/)
 
@@ -106,18 +93,16 @@ pre-commit run --all-files
 curl -sSfL --proto '=https' --tlsv1.2 https://terragrunt.com/install | bash
 ```
 
+## Agent and git setup
 
-
-## Setup the Cluster (Ansible)
-
-See [ansible/README.md](ansible/README.md) for full details. Run from the `ansible/` directory:
+`.claude` is a symlink to `.agents/`. On a fresh clone:
 
 ```bash
-cd ansible
+ln -s .agents .claude
+```
 
-# Check SSH connectivity
-ansible k8s_control_plane -m ping
+MCP servers are configured in `.agents/mcp/servers.json`. To regenerate vendor-specific configs:
 
-# Apply
-ansible-playbook playbooks/k8s.yml
+```bash
+.agents/scripts/sync-mcp.sh
 ```

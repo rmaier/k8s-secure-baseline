@@ -10,3 +10,15 @@
   become: true
   roles:
     - k8s-control-plane
+
+- name: Install Cilium CNI
+  hosts: k8s_control_plane
+  become: true
+  roles:
+    - cilium
+
+- name: Bootstrap ArgoCD
+  hosts: k8s_control_plane
+  become: true
+  roles:
+    - argocd-bootstrap

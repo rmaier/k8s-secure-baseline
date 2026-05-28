@@ -1,0 +1,35 @@
+---
+- name: Install Helm
+  ansible.builtin.shell:
+    cmd: curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+    creates: /usr/local/bin/helm
+
+- name: Add Cilium Helm repo
+  ansible.builtin.command:
+    cmd: helm repo add cilium https://helm.cilium.io/
+  changed_when: false
+
+- name: Update Helm repos
+  ansible.builtin.command:
+    cmd: helm repo update
+  changed_when: false
+
+- name: Install or upgrade Cilium
+  ansible.builtin.command:
+    cmd: >
+      helm upgrade --install cilium cilium/cilium
+      --version {{ cilium_chart_version }}
+      --namespace kube-system
+      --set image.pullPolicy=IfNotPresent
+      --wait
+  environment:
+    KUBECONFIG: /etc/kubernetes/admin.conf
+  register: cilium_result
+  changed_when: "'has been installed' in cilium_result.stdout or 'has been upgraded' in cilium_result.stdout"
+
+- name: Wait for Cilium pods to be ready
+  ansible.builtin.command:
+    cmd: kubectl -n kube-system rollout status daemonset/cilium --timeout=120s
+  environment:
+    KUBECONFIG: /etc/kubernetes/admin.conf
+  changed_when: false

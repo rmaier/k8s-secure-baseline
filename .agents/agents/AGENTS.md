@@ -46,7 +46,7 @@ terragrunt plan -var-file=terraform.tfvars
 terragrunt apply -var-file=terraform.tfvars
 ```
 
-Remote state (GCS) is stubbed in `infra/terragrunt.hcl` — create the bucket and uncomment to activate.
+Remote state (GCS) is stubbed in `infra/root.hcl` — create the bucket and uncomment to activate.
 
 Provider versions are pinned in `infra/envs/gcp-vps/versions.tf`. Current: `hashicorp/google ~> 7.33`, `timofurrer/desec ~> 0.6`.
 

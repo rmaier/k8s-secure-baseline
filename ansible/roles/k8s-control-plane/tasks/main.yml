@@ -8,7 +8,6 @@
   ansible.builtin.command:
     cmd: >
       kubeadm init
-      --pod-network-cidr={{ pod_network_cidr }}
       --apiserver-cert-extra-sans={{ subdomain }}.{{ domain }}
   when: not kubeadm_init_done.stat.exists
   register: kubeadm_init_output
@@ -42,13 +41,6 @@
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0600"
-
-- name: Deploy Flannel CNI
-  ansible.builtin.command:
-    cmd: kubectl apply -f {{ flannel_manifest }}
-  environment:
-    KUBECONFIG: /etc/kubernetes/admin.conf
-  when: not kubeadm_init_done.stat.exists
 
 - name: Untaint control-plane node
   ansible.builtin.command:

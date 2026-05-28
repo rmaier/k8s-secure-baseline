@@ -1,6 +1,8 @@
 k8s_version: "1.36"
-pod_network_cidr: "10.244.0.0/16"
-flannel_manifest: "https://github.com/flannel-io/flannel/releases/latest/download/kube-flannel.yml"
+cilium_chart_version: "1.19.4"
+argocd_chart_version: "9.5.16"
 kubeconfig_local_path: "~/.kube/config"
 domain: "rudolphmaier.de"
 subdomain: "node01"
+# Set to your GitHub repo URL before running the argocd-bootstrap role
+argocd_repo_url: "https://github.com/YOUR_USERNAME/YOUR_REPO"
