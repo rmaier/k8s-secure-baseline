@@ -12,3 +12,8 @@ output "instance_external_ip" {
   value       = google_compute_instance.vps.network_interface[0].access_config[0].nat_ip
   description = "Ephemeral external IPv4"
 }
+
+output "fqdn" {
+  value       = module.dns.fqdn
+  description = "Fully qualified domain name pointing to the VPS"
+}
