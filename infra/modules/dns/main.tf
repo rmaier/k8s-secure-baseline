@@ -16,3 +16,11 @@ resource "desec_rrset" "a" {
   ttl     = var.ttl
   rdata   = [var.ip]
 }
+
+resource "desec_rrset" "wildcard" {
+  domain  = var.domain
+  subname = "*"
+  type    = "A"
+  ttl     = var.ttl
+  rdata   = [var.ip]
+}

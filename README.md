@@ -45,7 +45,35 @@ This runs four plays in sequence: system prerequisites → kubeadm control plane
 
 After a successful run: `kubectl get nodes` shows `Ready`, `argocd app list` shows all platform apps syncing from Git.
 
-## 3. Tooling setup
+## 3. Access ArgoCD
+
+The UI is available at `https://argocd.rudolphmaier.de` (TLS via Let's Encrypt).
+
+**Initial login:**
+
+```bash
+# Get the auto-generated admin password
+kubectl get secret argocd-initial-admin-secret -n argocd \
+  -o jsonpath='{.data.password}' | base64 -d && echo
+```
+
+Username: `admin`. After first login, change the password via User Info → Update Password, then delete the secret:
+
+```bash
+kubectl delete secret argocd-initial-admin-secret -n argocd
+```
+
+**Login options:**
+
+| Method | How |
+|---|---|
+| Admin account | Initial password from secret above |
+| Local accounts | Add `accounts.<name>: login` to `argocd-cm` ConfigMap |
+| GitHub SSO | Configure Dex in `argocd-cm` / `argocd-secret` (~10 lines) |
+
+For production hardening: set up SSO, then disable admin with `admin.enabled: "false"` in `argocd-cm`.
+
+## 4. Tooling setup
 
 ### tflint and tofu fmt
 
