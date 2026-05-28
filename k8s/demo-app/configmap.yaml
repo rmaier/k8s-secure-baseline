@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: demo-app-html
+  namespace: demo
+data:
+  index.html: |
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>k8s-secure-baseline</title>
+      <style>
+        body { font-family: monospace; max-width: 640px; margin: 4rem auto; padding: 0 1rem; }
+        h1 { font-size: 1.4rem; }
+        table { border-collapse: collapse; width: 100%; margin-top: 1rem; }
+        td, th { border: 1px solid #ccc; padding: 0.4rem 0.8rem; text-align: left; }
+        th { background: #f4f4f4; }
+      </style>
+    </head>
+    <body>
+      <h1>k8s-secure-baseline</h1>
+      <p>Compliant GitOps platform on self-managed Kubernetes.</p>
+      <table>
+        <tr><th>Layer</th><th>Technology</th></tr>
+        <tr><td>IaC</td><td>OpenTofu + Terragrunt</td></tr>
+        <tr><td>Node provisioning</td><td>Ansible + kubeadm</td></tr>
+        <tr><td>CNI</td><td>Cilium 1.19</td></tr>
+        <tr><td>GitOps</td><td>ArgoCD (app-of-apps)</td></tr>
+        <tr><td>Ingress</td><td>ingress-nginx (hostNetwork)</td></tr>
+        <tr><td>TLS</td><td>cert-manager + Let's Encrypt</td></tr>
+        <tr><td>DNS</td><td>deSEC (wildcard A record)</td></tr>
+      </table>
+    </body>
+    </html>
