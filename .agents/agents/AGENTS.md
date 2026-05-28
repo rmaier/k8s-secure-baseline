@@ -24,30 +24,38 @@ This writes `.mcp.json` (Claude Code) and `opencode.json` (OpenCode) from the si
 
 This repo uses **OpenTofu**, not Terraform. Use `tofu` commands, not `terraform`.
 
-Environment-specific state lives under `infra/environments/{dev,prod}/`. Each environment directory is a standalone root module that references shared modules from `infra/modules/`.
+State is local, root module is flat at `infra/`. No Terragrunt, no remote state.
 
 ```bash
-cd infra/environments/dev
+cd infra
 tofu init
 tofu plan -var-file=terraform.tfvars
 tofu apply -var-file=terraform.tfvars
 ```
 
-Modules (`infra/modules/vpc`, `infra/modules/gke`, `infra/modules/dns`) are stubs — implement them before referencing from environment roots.
+### Modules
 
-Provider versions are pinned in `infra/versions.tf`. Current: `hashicorp/google ~> 7.33`.
+| Module | Purpose |
+|---|---|
+| `infra/modules/vps` | GCP Compute Engine instance + ingress firewall rules (for_each over `allowed_ports` map) |
+| `infra/modules/dns` | deSEC A record via `timofurrer/desec` provider; exposes `fqdn` output |
+
+`infra/main.tf` is two module calls: `module "vps"` and `module "dns"`. The DNS module depends on `module.vps.external_ip` — no explicit `depends_on` needed.
+
+Provider versions are pinned in `infra/versions.tf`. Current: `hashicorp/google ~> 7.33`, `timofurrer/desec ~> 0.6`.
 
 ## Ansible
 
-Playbooks are in `ansible/playbooks/`, inventory in `ansible/inventory/hosts.yml`.
+Run all playbooks from the `ansible/` directory — `ansible.cfg` sets roles path and inventory relative to that directory.
 
 ```bash
-# Provision all hosts
-ansible-playbook -i ansible/inventory/hosts.yml ansible/playbooks/site.yml
+cd ansible
 
-# Harden (CIS / NIS2 baseline)
-ansible-playbook -i ansible/inventory/hosts.yml ansible/playbooks/harden.yml
+# Kubernetes bootstrap (kubeadm + Flannel CNI)
+ansible-playbook playbooks/k8s.yml
 ```
+
+Cluster variables (k8s version, pod CIDR, Flannel manifest URL) live in `ansible/inventory/group_vars/k8s_control_plane.yml` — single source of truth, not duplicated in role defaults.
 
 ## Skills
 
