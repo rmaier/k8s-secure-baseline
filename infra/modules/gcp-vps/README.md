@@ -1,4 +1,4 @@
-# Module: vps
+# Module: gcp-vps
 
 Provisions a single GCP Compute Engine instance with Ubuntu 24.04 LTS and a set of ingress firewall rules.
 
@@ -6,7 +6,7 @@ Provisions a single GCP Compute Engine instance with Ubuntu 24.04 LTS and a set 
 
 ```hcl
 module "vps" {
-  source = "./modules/vps"
+  source = "../../modules/gcp-vps"
 
   instance_name = "my-vps"
   zone          = "europe-southwest1-a"
@@ -17,7 +17,7 @@ Override `allowed_ports` to open additional ports or restrict defaults:
 
 ```hcl
 module "vps" {
-  source = "./modules/vps"
+  source = "../../modules/gcp-vps"
 
   instance_name = "my-vps"
   zone          = "europe-southwest1-a"

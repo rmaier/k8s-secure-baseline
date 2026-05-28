@@ -1,5 +1,5 @@
 module "vps" {
-  source = "./modules/vps"
+  source = "../../modules/gcp-vps"
 
   instance_name     = var.instance_name
   machine_type      = var.machine_type
@@ -11,7 +11,7 @@ module "vps" {
 }
 
 module "dns" {
-  source = "./modules/dns"
+  source = "../../modules/dns"
 
   domain    = var.domain
   subdomain = var.subdomain

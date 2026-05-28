@@ -20,29 +20,35 @@ The source of truth for MCP servers is `.agents/mcp/servers.json`. **Never edit 
 
 This writes `.mcp.json` (Claude Code) and `opencode.json` (OpenCode) from the single vendor-agnostic config.
 
-## Infrastructure (OpenTofu)
+## Infrastructure (OpenTofu + Terragrunt)
 
-This repo uses **OpenTofu**, not Terraform. Use `tofu` commands, not `terraform`.
+This repo uses **OpenTofu**, not Terraform. Use `tofu` commands, not `terraform`. Environments are managed with **Terragrunt** — use `terragrunt` commands inside env directories.
 
-State is local, root module is flat at `infra/`. No Terragrunt, no remote state.
-
-```bash
-cd infra
-tofu init
-tofu plan -var-file=terraform.tfvars
-tofu apply -var-file=terraform.tfvars
+```
+infra/
+├── terragrunt.hcl          # root: remote state config (GCS — see inline instructions to enable)
+├── modules/
+│   ├── gcp-vps/            # GCP Compute Engine + firewall rules
+│   └── dns/                # deSEC A record via timofurrer/desec
+└── envs/
+    └── gcp-vps/            # single GCP VM running kubeadm
+        ├── terragrunt.hcl  # inherits root
+        ├── main.tf
+        └── terraform.tfvars (gitignored)
 ```
 
-### Modules
+Run from the env directory:
 
-| Module | Purpose |
-|---|---|
-| `infra/modules/vps` | GCP Compute Engine instance + ingress firewall rules (for_each over `allowed_ports` map) |
-| `infra/modules/dns` | deSEC A record via `timofurrer/desec` provider; exposes `fqdn` output |
+```bash
+cd infra/envs/gcp-vps
+terragrunt init
+terragrunt plan -var-file=terraform.tfvars
+terragrunt apply -var-file=terraform.tfvars
+```
 
-`infra/main.tf` is two module calls: `module "vps"` and `module "dns"`. The DNS module depends on `module.vps.external_ip` — no explicit `depends_on` needed.
+Remote state (GCS) is stubbed in `infra/terragrunt.hcl` — create the bucket and uncomment to activate.
 
-Provider versions are pinned in `infra/versions.tf`. Current: `hashicorp/google ~> 7.33`, `timofurrer/desec ~> 0.6`.
+Provider versions are pinned in `infra/envs/gcp-vps/versions.tf`. Current: `hashicorp/google ~> 7.33`, `timofurrer/desec ~> 0.6`.
 
 ## Ansible
 

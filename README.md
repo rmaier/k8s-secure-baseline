@@ -98,6 +98,16 @@ pre-commit install
 pre-commit run --all-files
 ```
 
+## Setup terragrunt
+
+[docs](https://docs.terragrunt.com/getting-started/quick-start/)
+
+```bash
+curl -sSfL --proto '=https' --tlsv1.2 https://terragrunt.com/install | bash
+```
+
+
+
 ## Setup the Cluster (Ansible)
 
 See [ansible/README.md](ansible/README.md) for full details. Run from the `ansible/` directory:
