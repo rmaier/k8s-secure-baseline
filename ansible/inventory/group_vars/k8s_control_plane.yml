@@ -4,5 +4,4 @@ argocd_chart_version: "9.5.16"
 kubeconfig_local_path: "~/.kube/config"
 domain: "rudolphmaier.de"
 subdomain: "node01"
-# Set to your GitHub repo URL before running the argocd-bootstrap role
-argocd_repo_url: "https://github.com/YOUR_USERNAME/YOUR_REPO"
+argocd_repo_url: "https://github.com/rmaier/k8s-secure-baseline"
