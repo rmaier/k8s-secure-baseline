@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: librespeed-app
+  namespace: librespeed
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: librespeed-app
+  template:
+    metadata:
+      labels:
+        app: librespeed-app
+    spec:
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+      initContainers:
+        - name: setup
+          image: ghcr.io/librespeed/speedtest:master-alpine
+          command:
+            - sh
+            - -c
+            - cp -a /etc/apache2/. /apache-config/ && cp -a /var/www/html/. /html-data/
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+          volumeMounts:
+            - name: apache-config
+              mountPath: /apache-config
+            - name: html-data
+              mountPath: /html-data
+      containers:
+        - name: librespeed
+          image: ghcr.io/librespeed/speedtest:master-alpine
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+              add: [CHOWN]
+          volumeMounts:
+            - name: html-data
+              mountPath: /var/www/html
+            - name: apache-config
+              mountPath: /etc/apache2
+            - name: apache-logs
+              mountPath: /var/log/apache2
+            - name: apache-run
+              mountPath: /var/run/apache2
+            - name: tmp
+              mountPath: /tmp
+            - name: database
+              mountPath: /database
+      volumes:
+        - name: html-data
+          emptyDir: {}
+        - name: apache-config
+          emptyDir: {}
+        - name: apache-logs
+          emptyDir: {}
+        - name: apache-run
+          emptyDir: {}
+        - name: tmp
+          emptyDir: {}
+        - name: database
+          emptyDir: {}

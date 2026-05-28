@@ -1,0 +1,25 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: librespeed-app
+  namespace: librespeed
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - librespeed.rudolphmaier.de
+      secretName: librespeed-app-tls
+  rules:
+    - host: librespeed.rudolphmaier.de
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: librespeed-app
+                port:
+                  number: 80
