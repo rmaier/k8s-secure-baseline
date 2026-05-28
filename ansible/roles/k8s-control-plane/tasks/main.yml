@@ -23,6 +23,23 @@
     remote_src: true
     mode: "0600"
 
+- name: Create .kube directory for ansible user
+  ansible.builtin.file:
+    path: "/home/{{ ansible_user }}/.kube"
+    state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: "0700"
+
+- name: Copy admin kubeconfig for ansible user
+  ansible.builtin.copy:
+    src: /etc/kubernetes/admin.conf
+    dest: "/home/{{ ansible_user }}/.kube/config"
+    remote_src: true
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: "0600"
+
 - name: Deploy Flannel CNI
   ansible.builtin.command:
     cmd: kubectl apply -f {{ flannel_manifest }}
