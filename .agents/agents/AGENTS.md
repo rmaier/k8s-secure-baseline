@@ -74,6 +74,7 @@ Skills are in `.agents/skills/` and load automatically when their description ma
 | `k8s` | Kubernetes manifests |
 | `devsecops` | Trivy + OWASP scanning, NIS2/DORA gates |
 | `commit` | Creating git commits (Conventional Commits format) |
+| `adr` | Create an Architecture Decision Record in `docs/adr/` |
 
 ## Commits
 
