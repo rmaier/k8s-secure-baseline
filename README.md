@@ -45,7 +45,36 @@ This runs four plays in sequence: system prerequisites → kubeadm control plane
 
 After a successful run: `kubectl get nodes` shows `Ready`, `argocd app list` shows all platform apps syncing from Git.
 
-## 3. Access ArgoCD
+## 3. Cilium CNI
+
+[docs](https://docs.cilium.io/en/stable/gettingstarted/k8s-install-default/#k8s-install-quick)
+
+Cilium is installed automatically by the Ansible playbook (`ansible/roles/cilium`) via Helm:
+
+```bash
+helm upgrade --install cilium cilium/cilium \
+  --version 1.19.4 \
+  --namespace kube-system
+```
+
+### Cilium CLI
+
+```bash
+CILIUM_CLI_VERSION=$(curl -s https://raw.githubusercontent.com/cilium/cilium-cli/main/stable.txt)
+CLI_ARCH=amd64
+if [ "$(uname -m)" = "aarch64" ]; then CLI_ARCH=arm64; fi
+curl -L --fail --remote-name-all https://github.com/cilium/cilium-cli/releases/download/${CILIUM_CLI_VERSION}/cilium-linux-${CLI_ARCH}.tar.gz{,.sha256sum}
+sha256sum --check cilium-linux-${CLI_ARCH}.tar.gz.sha256sum
+sudo tar xzvfC cilium-linux-${CLI_ARCH}.tar.gz /usr/local/bin
+rm cilium-linux-${CLI_ARCH}.tar.gz{,.sha256sum}
+```
+
+```bash
+cilium status
+cilium connectivity test
+```
+
+## 4. Access ArgoCD
 
 The UI is available at `https://argocd.rudolphmaier.de` (TLS via Let's Encrypt).
 
@@ -73,7 +102,7 @@ kubectl delete secret argocd-initial-admin-secret -n argocd
 
 For production hardening: set up SSO, then disable admin with `admin.enabled: "false"` in `argocd-cm`.
 
-## 4. Tooling setup
+## 5. Tooling setup
 
 ### tflint and tofu fmt
 

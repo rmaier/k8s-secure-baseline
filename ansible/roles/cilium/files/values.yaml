@@ -1,0 +1,8 @@
+image:
+  pullPolicy: IfNotPresent
+
+hubble:
+  relay:
+    enabled: true
+  ui:
+    enabled: true
