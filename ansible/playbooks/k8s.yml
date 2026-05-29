@@ -2,23 +2,27 @@
 - name: K8s prerequisites
   hosts: k8s_control_plane
   become: true
+  tags: [common]
   roles:
     - k8s-common
 
 - name: K8s control plane bootstrap
   hosts: k8s_control_plane
   become: true
+  tags: [control-plane]
   roles:
     - k8s-control-plane
 
 - name: Install Cilium CNI
   hosts: k8s_control_plane
   become: true
+  tags: [cilium]
   roles:
     - cilium
 
 - name: Bootstrap ArgoCD
   hosts: k8s_control_plane
   become: true
+  tags: [argocd]
   roles:
     - argocd-bootstrap
