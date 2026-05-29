@@ -1,0 +1,73 @@
+# cilium-values.yaml
+# Helm values for Cilium CNI — managed by Ansible, applied via helm upgrade.
+# Variable substitution via Ansible: {{ ansible_default_ipv4.address }}
+# Reference: https://docs.cilium.io/en/stable/helm-reference/
+
+image:
+  pullPolicy: IfNotPresent
+
+# ── kube-proxy replacement ────────────────────────────────────────
+# Cilium handles all Service routing via eBPF instead of iptables.
+# WARNING: enabling on a running cluster requires removing kube-proxy
+# first (kubectl -n kube-system delete ds kube-proxy) — disruptive.
+# k8sServiceHost must be the API server's internal IP, not localhost.
+#
+# kubeProxyReplacement: true
+# k8sServiceHost: "{{ ansible_default_ipv4.address }}"
+# k8sServicePort: "6443"
+
+# ── IPAM ──────────────────────────────────────────────────────────
+# cluster-pool: Cilium owns IP assignment — use on bare-metal / VPS.
+# kubernetes: cloud provider assigns IPs — use on GKE.
+ipam:
+  mode: cluster-pool
+  operator:
+    clusterPoolIPv4PodCIDRList:
+      - "10.244.0.0/16"
+
+# ── Routing mode ──────────────────────────────────────────────────
+# tunnel:  VXLAN overlay, works everywhere, small overhead (~50 bytes/pkt).
+# native:  no overlay, requires VPC to route pod CIDRs between nodes.
+#          Not available on GCP VPS without additional routing config.
+routingMode: tunnel
+tunnelProtocol: vxlan
+
+# ── eBPF optimisations ────────────────────────────────────────────
+bpf:
+  # Replace iptables MASQUERADE with eBPF — lower CPU, better visibility.
+  masquerade: true
+  # hostLegacyRouting: false  # max performance, requires kernel >= 5.10
+  #                           # kernel {{ ansible_kernel }} detected
+
+# ── Encryption ────────────────────────────────────────────────────
+# WireGuard: transparent node-to-node encryption, zero config, kernel >= 5.6.
+# Required for NIS-2 Art. 21 encryption-in-transit control.
+# Safe to enable on a running cluster — rolls out per node.
+#
+# encryption:
+#   enabled: true
+#   type: wireguard
+
+# ── Hubble observability ──────────────────────────────────────────
+# relay: aggregates flows cluster-wide (required for Hubble UI).
+# ui:    web dashboard — exposed at hubble.{{ domain }} via ArgoCD ingress.
+hubble:
+  enabled: true
+  metrics:
+    enabled:
+      - dns
+      - drop
+      - tcp
+      - flow
+      - port-distribution
+      - httpV2
+  relay:
+    enabled: true
+  ui:
+    enabled: true
+
+# ── Policy enforcement ────────────────────────────────────────────
+# default: enforce policy for pods that HAVE a NetworkPolicy, allow all others.
+# always:  deny all unless explicitly allowed — enable in Phase 2 with full rules.
+# never:   disable enforcement (debug only).
+policyEnforcementMode: default

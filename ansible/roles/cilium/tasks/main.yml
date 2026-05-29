@@ -14,9 +14,9 @@
     cmd: helm repo update
   changed_when: false
 
-- name: Copy Cilium Helm values
-  ansible.builtin.copy:
-    src: values.yaml
+- name: Template Cilium Helm values
+  ansible.builtin.template:
+    src: values.yaml.j2
     dest: /tmp/cilium-values.yaml
     mode: "0644"
 
